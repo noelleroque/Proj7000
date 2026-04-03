@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project 7000</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F1A2E; --bg-card: #162033; --bg-card-hover: #1B2840; --border: #243352;
+    --gold: #D4A853; --gold-muted: #B8924A; --gold-soft: rgba(212,168,83,0.12);
+    --white: #F0EDE8; --text: #C8C2B8; --text-secondary: #8A8478; --text-muted: #5E5850;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+  body::after {
+    content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999; opacity: 0.4;
+  }
+
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); width: 0%; z-index: 10000; transition: width 0.1s linear; }
+  .page { max-width: 720px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  .archipelago-wrap { position: relative; overflow: hidden; }
+  .archipelago-bg { position: absolute; top: 10px; right: -60px; width: 320px; height: 500px; opacity: 0.04; pointer-events: none; z-index: 0; }
+  .archipelago-bg svg { width: 100%; height: 100%; }
+
+  /* Restructured header */
+  .header-wrap { padding: 80px 0 20px; position: relative; z-index: 1; }
+  .header { text-align: center; will-change: transform; }
+
+  .header-invite {
+    font-family: 'Playfair Display', serif; font-size: 29px; font-weight: 600;
+    color: var(--white); line-height: 1.3; margin-bottom: 6px;
+    opacity: 0; animation: fadeIn 1s ease 0.2s forwards;
+  }
+  .header-invite-reason {
+    font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; font-style: italic;
+    color: var(--gold-muted); margin-bottom: 40px;
+    opacity: 0; animation: fadeIn 1s ease 0.5s forwards;
+  }
+  .header-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px;
+    opacity: 0; animation: fadeIn 1s ease 0.7s forwards;
+  }
+  .header-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 23px; font-weight: 500;
+    color: var(--text); line-height: 1.3; margin-bottom: 4px;
+    opacity: 0; animation: fadeIn 1s ease 0.8s forwards;
+  }
+  .header-sub {
+    font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 400; font-style: italic;
+    color: var(--text-secondary);
+    opacity: 0; animation: fadeIn 1s ease 0.9s forwards;
+  }
+
+  .divider { width: 48px; height: 2px; background: var(--gold); margin: 36px auto; opacity: 0; animation: growLine 0.6s ease 1.1s forwards; }
+  .confidential { text-align: center; margin-bottom: 56px; opacity: 0; animation: fadeIn 0.8s ease 1.3s forwards; }
+  .confidential span { display: inline-block; font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); border: 1px solid var(--border); padding: 6px 16px; border-radius: 2px; }
+
+  .section-divider { width: 60px; height: 1px; background: var(--gold); margin: 0 auto 56px; opacity: 0; transition: opacity 0.6s ease; }
+  .section-divider.visible { opacity: 0.4; }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal.delay-1 { transition-delay: 0.1s; } .reveal.delay-2 { transition-delay: 0.2s; }
+  .reveal.delay-3 { transition-delay: 0.3s; } .reveal.delay-4 { transition-delay: 0.4s; }
+  .reveal.delay-5 { transition-delay: 0.5s; }
+
+  .section { margin-bottom: 0; padding-bottom: 56px; }
+  .section-label { font-size: 10px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .section h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--white); margin-bottom: 16px; line-height: 1.3; }
+  .section p { font-size: 15px; color: var(--text); margin-bottom: 14px; }
+  .section p.secondary { color: var(--text-secondary); font-size: 14px; }
+  .section p.intro { font-family: 'Cormorant Garamond', serif; font-size: 19px; color: var(--white); font-style: italic; line-height: 1.5; margin-bottom: 24px; }
+
+  .highlight { background: var(--gold-soft); border-left: 3px solid var(--gold-muted); padding: 20px 24px; margin: 24px 0; border-radius: 0 4px 4px 0; }
+  .highlight p { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-style: italic; color: var(--white); line-height: 1.5; margin: 0; }
+
+  .insight { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 22px 24px; margin-bottom: 16px; transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+  .insight:hover { border-color: var(--gold-muted); background: var(--bg-card-hover); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px var(--gold-muted); }
+  .insight-number { font-size: 10px; font-weight: 500; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+  .insight h3 { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+  .insight p { font-size: 14px; color: var(--text); margin-bottom: 0; line-height: 1.65; }
+  .insight .citation { font-size: 11px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+  .counter { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--gold); }
+
+  .pull-quote { padding: 36px 0; margin: 28px 0; text-align: center; border-top: 1px solid var(--gold-muted); border-bottom: 1px solid var(--gold-muted); }
+  .pull-quote p { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: var(--gold); line-height: 1.6; margin: 0; letter-spacing: 0.3px; }
+
+  .comp-narrative { margin-top: 28px; }
+  .comp-narrative p { font-size: 14px; color: var(--text); margin-bottom: 14px; line-height: 1.7; }
+  .comp-narrative .cite { font-size: 11px; color: var(--text-muted); font-style: italic; display: block; margin-top: 2px; margin-bottom: 16px; }
+
+  .research-note { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 18px 24px; margin-top: 24px; }
+  .research-note p { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.6; }
+
+  .pillars { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+  .pillar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px 24px; transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+  .pillar:hover { border-color: var(--gold-muted); background: var(--bg-card-hover); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px var(--gold-muted); }
+  .pillar-number { font-size: 11px; font-weight: 500; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+  .pillar h3 { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .pillar p { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.6; }
+
+  .founders { display: flex; gap: 24px; margin-top: 20px; }
+  .founder { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px; transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+  .founder:hover { border-color: var(--gold-muted); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+  .founder a { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; color: var(--white); text-decoration: none; border-bottom: 1px solid var(--border); transition: border-color 0.3s ease; }
+  .founder a:hover { border-color: var(--gold); }
+  .founder .title { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
+
+  .next-box { background: var(--gold-soft); border: 1px solid var(--gold-muted); border-radius: 4px; padding: 32px; text-align: center; margin-top: 20px; transition: box-shadow 0.3s ease; }
+  .next-box:hover { box-shadow: 0 0 40px rgba(212,168,83,0.1); }
+  .next-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--gold); margin-bottom: 8px; }
+  .next-box p { font-size: 14px; color: var(--text); margin: 0; line-height: 1.6; }
+
+  .salamat-divider { width: 48px; height: 1px; background: var(--gold); margin: 0 auto 32px; opacity: 0; transition: opacity 0.6s ease; }
+  .salamat-divider.visible { opacity: 0.5; }
+  .salamat { text-align: center; padding: 0 0 16px; }
+  .salamat-word { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; font-style: italic; color: var(--gold); position: relative; display: inline-block; }
+  .baybayin { position: absolute; right: -44px; top: -8px; width: 36px; height: 36px; opacity: 0.15; }
+  .baybayin svg { width: 100%; height: 100%; }
+
+  .footer { text-align: center; padding: 24px 0 40px; }
+  .footer p { font-size: 11px; letter-spacing: 1px; color: var(--text-muted); }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes growLine { from { opacity: 0; width: 0; } to { opacity: 1; width: 48px; } }
+
+  @media (max-width: 600px) {
+    .header-invite { font-size: 24px; }
+    .header-invite-reason { font-size: 16px; }
+    .founders { flex-direction: column; }
+    .page { padding: 0 20px; }
+    .archipelago-bg { width: 200px; right: -40px; }
+    .pull-quote p { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="page">
+  <div class="archipelago-wrap">
+    <div class="archipelago-bg">
+      <svg viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#D4A853" stroke-width="0.8" fill="none" opacity="1">
+          <path d="M95 30 C100 28, 115 32, 120 40 C125 48, 128 55, 130 65 C132 75, 125 85, 120 95 C115 105, 118 110, 115 120 C112 125, 105 128, 100 125 C95 122, 88 118, 85 110 C82 102, 78 95, 80 85 C82 75, 85 65, 88 55 C90 45, 92 35, 95 30Z"/>
+          <path d="M85 135 C90 132, 98 134, 100 140 C102 146, 98 152, 92 154 C86 156, 82 150, 82 144 C82 138, 83 136, 85 135Z"/>
+          <path d="M105 160 C110 158, 118 160, 122 165 C126 170, 128 178, 125 182 C122 186, 115 188, 110 185 C105 182, 102 175, 103 168 C104 164, 105 161, 105 160Z"/>
+          <path d="M88 170 C92 168, 100 170, 102 176 C104 182, 100 188, 95 190 C90 192, 85 188, 84 182 C83 176, 86 172, 88 170Z"/>
+          <path d="M125 175 C130 173, 138 176, 140 182 C142 188, 138 194, 132 195 C126 196, 122 191, 122 185 C122 179, 124 176, 125 175Z"/>
+          <path d="M60 140 C62 135, 65 130, 63 140 C61 150, 58 160, 55 175 C52 190, 50 205, 48 220 C46 235, 45 245, 48 250 C51 255, 55 252, 54 245 C53 238, 52 230, 54 220"/>
+          <path d="M100 210 C108 205, 120 208, 130 215 C140 222, 148 230, 150 242 C152 254, 145 265, 135 270 C125 275, 115 272, 108 265 C101 258, 95 248, 93 238 C91 228, 94 218, 100 210Z"/>
+          <circle cx="75" cy="275" r="3"/><circle cx="65" cy="285" r="2.5"/><circle cx="55" cy="293" r="2"/><circle cx="48" cy="300" r="1.5"/>
+          <circle cx="140" cy="155" r="4"/><circle cx="148" cy="195" r="3"/><circle cx="78" cy="195" r="3"/><circle cx="112" cy="200" r="2.5"/><circle cx="95" cy="150" r="2"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="header-wrap">
+      <div class="header" id="header">
+        <div class="header-invite">You were invited into this conversation</div>
+        <div class="header-invite-reason">because we think you belong in this room.</div>
+        <div class="header-label">Project 7000 (interim name)</div>
+        <div class="header-title">Filipino Senior Leaders Community</div>
+        <div class="header-sub">Toronto / Greater Toronto Area</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="confidential"><span>Shared by invitation only</span></div>
+
+  <div class="section">
+    <div class="reveal">
+      <div class="section-label">The Gap</div>
+      <p class="intro">Before we started building, we went looking for what already existed. Here's what we found.</p>
+    </div>
+    <div class="insight reveal delay-1" id="insightOne">
+      <div class="insight-number">01</div>
+      <h3>The Filipino professional paradox</h3>
+      <p>Filipino-Canadians are the most educated (<span class="counter" data-target="45.5" data-suffix="%" data-decimals="1">0</span> bachelor's+), most employed (<span class="counter" data-target="74.2" data-suffix="%" data-decimals="1">0</span>), and most overqualified (<span class="counter" data-target="41.8" data-suffix="%" data-decimals="1">0</span>) racialized group in Canada. The talent is there. The system doesn't reward it proportionally: degree-holders earn <span class="counter" data-target="33.4" data-suffix="%" data-decimals="1">0</span> less than non-racialized peers. Root cause: credential non-recognition compounded by historical immigration pathways. For Filipino women who entered via the caregiver pathway, 76% are overqualified. Those who break through to VP+ share an experience almost no one around them understands.</p>
+      <div class="citation">2021 Census, Statistics Canada, Catalogue 98-200-X, issue 2021011; 2024 Labour Force Survey, Catalogue 14-28-0001-X (published August 2025)</div>
+    </div>
+    <div class="insight reveal delay-2">
+      <div class="insight-number">02</div>
+      <h3>40+ Filipino organizations. Zero at the executive level.</h3>
+      <p>The gap isn't in Filipino organizations broadly. It's specifically at the executive tier. Every Filipino org is either industry-specific (nurses, accountants, engineers), SMB-focused (business chambers), or youth-oriented (Rise Tribe). The cross-industry, senior-level peer connection that other communities have doesn't exist for Filipino leaders.</p>
+      <div class="citation">Landscape scan of 40+ Filipino organizations in the GTA, March 2026</div>
+    </div>
+    <div class="insight reveal delay-3">
+      <div class="insight-number">03</div>
+      <h3>Pan-Asian networks don't fill the gap</h3>
+      <p>Ascend Canada and NAAAP serve the broader Pan-Asian community, and Filipinos can and do participate. But Filipino leaders face distinctive challenges: caregiver pathway stigma, the highest overqualification rate of any racialized group, and cultural factors around leadership self-advocacy that differ from other Asian communities. Every other major Asian diaspora group has built their own community-specific executive infrastructure AND participates in pan-Asian networks. Both coexist. The Filipino community has neither.</p>
+      <div class="citation">Comparative analysis of South Asian, Chinese-Canadian, and Filipino executive infrastructure, March 2026</div>
+    </div>
+    <div class="insight reveal delay-4">
+      <div class="insight-number">04</div>
+      <h3>Most Filipino senior leaders are invisible</h3>
+      <p>ACCE celebrates Chinese-Canadian entrepreneurs with an 800-guest gala sponsored by all five major Canadian banks. ICCC recognizes Indo-Canadian achievement at its awards night. Nothing equivalent exists for Filipino professionals. There are notable exceptions, but no collective visibility infrastructure. Most Filipino senior leaders are invisible to each other, to corporate Canada, and to the next generation.</p>
+      <div class="citation">ACCE 28th Annual Awards Gala (2025); ICCC est. 1977, 1,000+ members</div>
+    </div>
+    <div class="insight reveal delay-5">
+      <div class="insight-number">05</div>
+      <h3>Mentorship flows down. Lateral support and board pipelines don't exist.</h3>
+      <p>Rise Tribe mentors youth. IFCNA mentors nurses through licensing. But there is no space where senior Filipino leaders support each other as peers. CCBC's board includes a Power Corp executive. ACCE galas draw senators and mayors. Filipino senior leaders have no collective platform from which to access board opportunities or political networks.</p>
+      <div class="citation">Rise Tribe (est. 2016); IFCNA (est. 2019, 4,500+ members); CCBC (est. 1978)</div>
+    </div>
+    <div class="comp-narrative reveal">
+      <p class="secondary" style="font-weight: 500; margin-bottom: 16px;">To put this in perspective:</p>
+      <p>South Asian senior leaders in the GTA have a chamber of commerce that runs trade missions to India, a global entrepreneurship network with 15,000+ members where successful founders mentor emerging ones while connecting with each other as peers, and awards programs that make their achievement visible to corporate Canada and government.</p>
+      <span class="cite">Indo Canada Chamber of Commerce (est. 1977, 1,000+ members, 7 national chapters); TiE Toronto (15,000+ global network, Charter Member tier at $500+/year)</span>
+      <p>Chinese-Canadian senior leaders have a business council whose board chair is an SVP at Power Corporation and whose executive director testifies before parliamentary committees. They have an annual awards gala that draws 800 guests and is sponsored by all five major Canadian banks. Their business associations co-present festivals that draw 80,000 people and have formalized collective advocacy across the GTA.</p>
+      <span class="cite">Canada China Business Council (est. 1978, 7 offices); ACCE (est. 1994, 28th annual gala 2025); Toronto Chinese Business Association (est. 1972)</span>
+    </div>
+    <div class="pull-quote reveal">
+      <p>Filipino senior leaders have none of this.<br>No peer network. No corporate sponsorship. No collective visibility.<br>No board pipeline. No political access.</p>
+    </div>
+    <div class="research-note reveal">
+      <p>These findings are drawn from a comprehensive landscape scan covering 40+ Filipino organizations, demographic data from Statistics Canada (2021 Census and 2024 Labour Force Survey), and a comparative analysis of executive infrastructure in the Chinese-Canadian and South Asian communities in the Greater Toronto Area.</p>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="section">
+    <div class="reveal">
+      <div class="section-label">What We're Building</div>
+      <h2>Instead of looking for these spaces, we're creating one.</h2>
+      <p>A peer community for Filipino and Filipina senior leaders in the Toronto/GTA. VP+, C-suite, board members, and founders running meaningful businesses. The community's purpose isn't pre-decided. We're bringing the right people together and letting what this becomes emerge from the room.</p>
+    </div>
+    <div class="highlight reveal delay-1">
+      <p>A room for Filipino leaders who've built something significant, whether that meant navigating the bamboo ceiling, being the only Filipino at the leadership table, or carrying the invisible weight of representing your community whether you signed up for it or not.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar reveal delay-1"><div class="pillar-number">01</div><h3>Lateral support at the top</h3><p>The Filipino community has no shortage of people giving back. But most of that energy flows downward. What's missing is peers who understand what it takes to lead at this level.</p></div>
+      <div class="pillar reveal delay-2"><div class="pillar-number">02</div><h3>Celebrating Filipino leadership</h3><p>A community where being Filipino is a strength, not something to code-switch around.</p></div>
+      <div class="pillar reveal delay-3"><div class="pillar-number">03</div><h3>Broader influence, over time</h3><p>If we get this right, it could lead to something bigger: pathways to board seats and real influence, so we're not just supporting each other but reshaping the systems we operate in.</p></div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="section">
+    <div class="reveal">
+      <div class="section-label">Who It's For</div>
+      <p>Filipino and Filipina leaders at the VP+, C-suite, and founder level in the Toronto/GTA. Cross-industry by design. All genders. The kind of room where everyone in it shares the experience of leading at this level.</p>
+      <p class="secondary">We're not looking for attendees. We're looking for the people whose perspective will define what this community becomes.</p>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="section">
+    <div class="reveal">
+      <div class="section-label">What's Next</div>
+      <div class="next-box">
+        <h3>A curated first gathering. Late spring 2026.</h3>
+        <p>Ten to twelve people. Meaningful conversation. Good food.<br>The first evening is about discovering what this community should be, together.<br>By invitation.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="section">
+    <div class="reveal">
+      <div class="section-label">Who's Behind This</div>
+      <p class="secondary">Two Filipino-Canadian senior leaders who saw a gap and decided to build something.</p>
+    </div>
+    <div class="founders">
+      <div class="founder reveal delay-1">
+        <a href="https://www.linkedin.com/in/noelleroque" target="_blank">Noelle Roque</a>
+        <div class="title">VP, AI Strategy, Programs &amp; Operations<br>Chubb</div>
+      </div>
+      <div class="founder reveal delay-2">
+        <a href="https://www.linkedin.com/in/annesteptoe" target="_blank">Anne Steptoe</a>
+        <div class="title">SVP, Engineering<br>Propel Holdings</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="salamat-divider"></div>
+  <div class="salamat reveal">
+    <div class="salamat-word">
+      Salamat
+      <div class="baybayin">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="#D4A853" stroke-width="3" stroke-linecap="round">
+            <path d="M30 75 C30 55, 35 35, 50 25 C60 18, 70 22, 72 32"/>
+            <path d="M50 25 C55 40, 65 50, 75 48"/>
+            <path d="M42 50 C48 55, 58 58, 68 55"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer reveal"><p>PROJECT 7000 &nbsp;&middot;&nbsp; CONFIDENTIAL &nbsp;&middot;&nbsp; FOR INVITED CONVERSATION ONLY</p></div>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const st = document.documentElement.scrollTop;
+  const sh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  document.getElementById('progressBar').style.width = (st / sh * 100) + '%';
+  const header = document.getElementById('header');
+  if (st < 600) { header.style.transform = 'translateY(' + (st * 0.15) + 'px)'; header.style.opacity = Math.max(0, 1 - (st / 450)); }
+});
+const revealEls = document.querySelectorAll('.reveal, .section-divider, .salamat-divider');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+revealEls.forEach(el => observer.observe(el));
+let countersStarted = false;
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !countersStarted) {
+      countersStarted = true;
+      document.querySelectorAll('.counter').forEach(counter => {
+        const target = parseFloat(counter.dataset.target), suffix = counter.dataset.suffix || '', decimals = parseInt(counter.dataset.decimals) || 0, duration = 1500, startTime = performance.now();
+        function update(t) { const p = Math.min((t - startTime) / duration, 1); counter.textContent = ((1 - Math.pow(1 - p, 3)) * target).toFixed(decimals) + suffix; if (p < 1) requestAnimationFrame(update); }
+        requestAnimationFrame(update);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+const io = document.getElementById('insightOne'); if (io) counterObserver.observe(io);
+</script>
+</body>
+</html>
